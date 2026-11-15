@@ -12,7 +12,10 @@ Never enter a real recovery phrase into this simulator. Generated phrases are di
 
 - Generate 12-word or 24-word English BIP-39 mnemonics using browser cryptographic randomness.
 - Validate BIP-39 word membership and checksum locally.
-- Derive a first Ethereum-compatible address locally (same address format for Ethereum, BNB Smart Chain, and Polygon).
+- Derive Bitcoin Legacy (P2PKH) and Native SegWit (P2WPKH) addresses locally.
+- Derive EVM addresses for Ethereum, BNB Smart Chain, and Polygon.
+- Derive TRON addresses for TRX and TRC-20 compatibility.
+- Select the network/address format in the dashboard; USDT is represented by its host chain (ERC-20, BEP-20, or TRC-20).
 - Keep a session-only count; do not send phrases to a server or persist them.
 - Run unit tests for mnemonic generation/validation and address derivation.
 
@@ -38,7 +41,7 @@ npm run build
 
 - ETH, BNB Smart Chain (BEP-20), and Polygon use EVM-compatible address derivation.
 - USDT is a token, not a blockchain. ERC-20 USDT uses an Ethereum address; BEP-20 USDT uses a BNB Smart Chain address; TRC-20 USDT uses a TRON address.
-- Bitcoin and TRON derivation support are not included in this initial scaffold.
+- Bitcoin Taproot (P2TR) is not included yet.
 
 ## Privacy
 
