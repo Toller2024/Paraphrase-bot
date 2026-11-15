@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { createMnemonic, checkMnemonic } from "./services/mnemonicService.js";
 import { deriveNetworkAddress } from "./services/networkDerivationService.js";
+import { fetchPublicAddressBalance } from "./services/balanceMonitorService.js";
 
 export default function App() {
   const [wordCount, setWordCount] = useState(12);
@@ -10,6 +11,11 @@ export default function App() {
   const [generationProof, setGenerationProof] = useState(null);
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
+  const [monitorNetwork, setMonitorNetwork] = useState("bitcoin");
+  const [monitorAddress, setMonitorAddress] = useState("");
+  const [balanceResult, setBalanceResult] = useState(null);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [balanceError, setBalanceError] = useState("");
   const validation = useMemo(() => checkMnemonic(phrase), [phrase]);
   const derived = useMemo(() => {
     if (!validation.valid) return null;
@@ -41,6 +47,13 @@ export default function App() {
     } catch (err) {
       setError(err.message || "Generation failed.");
     }
+  }
+
+  async function checkPublicBalance() {
+    setBalanceLoading(true); setBalanceError(""); setBalanceResult(null);
+    try { const result = await fetchPublicAddressBalance(monitorNetwork, monitorAddress.trim()); setBalanceResult(result); }
+    catch (err) { setBalanceError(err.message || "Unable to retrieve public blockchain data."); }
+    finally { setBalanceLoading(false); }
   }
 
   async function copyValue(value, label) {
@@ -113,8 +126,23 @@ export default function App() {
         {phrase && validation.valid && <div className="compatibility-list"><p className="eyebrow">OTHER SUPPORTED DERIVATION FORMATS</p>{compatibleAddresses.map((item) => <div className="compatibility-row" key={item.network + item.path}><div><strong>{item.network}</strong><small>{item.path}</small></div><code>{item.address}</code><button className="secondary" onClick={() => copyValue(item.address, item.network + " address")}>Copy</button></div>)}</div>}
         {phrase && validation.valid && <WalletCompatibility addresses={compatibleAddresses} />}
       </section>
-      <aside className="notice"><strong>Important security notice</strong><p>Generated phrases use real BIP-39 English words, cryptographic randomness, and a valid checksum. Successful derivation means the app can calculate addresses for the listed standards; it does not prove that a wallet already exists, identify a wallet owner, or indicate funds. Wallet compatibility is path-specific and is labelled only where documentation supports the exact path. This app does not probe wallets or check balances. Never enter a customer’s real recovery phrase or use a website-generated phrase to secure significant funds; create real wallets with a trusted offline or hardware-wallet setup.</p></aside>
-      <footer>PARAPHRASE BOT <span>·</span> NO SERVER · NO PHRASE STORAGE · NO BALANCE LOOKUPS</footer>
+
+      <section className="panel" id="public-balance-monitor">
+        <div className="panel-heading"><div><p className="eyebrow">06 / LIVE PUBLIC-CHAIN LOOKUP</p><h2>Authorized address balance check</h2></div><span className="tag">ADDRESS ONLY</span></div>
+        <p className="balance-intro">Enter a public address that you own or are explicitly authorized to monitor. This module queries public blockchain data directly; it never reads the recovery phrase above, derives an address from it, or searches for other wallets.</p>
+        <label className="field-label" htmlFor="monitor-network">BLOCKCHAIN</label>
+        <select id="monitor-network" value={monitorNetwork} onChange={(event) => {setMonitorNetwork(event.target.value);setBalanceResult(null);setBalanceError("");}}>
+          <option value="bitcoin">Bitcoin · BTC</option><option value="ethereum">Ethereum · ETH</option><option value="bsc">BNB Smart Chain · BNB</option><option value="polygon">Polygon · POL</option><option value="tron">TRON · TRX</option>
+        </select>
+        <label className="field-label" htmlFor="monitor-address" style={{marginTop:15}}>PUBLIC WALLET ADDRESS</label>
+        <input id="monitor-address" className="address-input" autoComplete="off" spellCheck="false" placeholder="Paste an authorized public address" value={monitorAddress} onChange={(event) => {setMonitorAddress(event.target.value);setBalanceResult(null);setBalanceError("");}} />
+        <button className="primary" disabled={balanceLoading || !monitorAddress.trim()} onClick={checkPublicBalance}>{balanceLoading ? "Querying public blockchain…" : "Retrieve real on-chain balance"} <span>↗</span></button>
+        {balanceError && <p className="error">{balanceError}</p>}
+        {balanceResult && <div className="balance-result"><p className="eyebrow">LIVE RESPONSE · {balanceResult.network}</p><strong>{balanceResult.balance} {balanceResult.symbol}</strong><small>{balanceResult.address}</small><small>Source: {balanceResult.source}</small><small>Retrieved: {new Date(balanceResult.checkedAt).toLocaleString()}</small><p>Balance data is factual public-chain information, not a security-risk score. A non-zero or high balance alone does not indicate compromise. Assess risk using verified malicious-contract exposure, suspicious approvals, confirmed theft indicators, or other evidence.</p></div>}
+        <p className="balance-disclaimer">Privacy: the address is sent to the selected public blockchain data endpoint. Do not enter private keys or recovery phrases. This feature checks native coin balance only; it does not enumerate tokens, identify owners, or monitor addresses in the background. Provider availability and rate limits may vary.</p>
+      </section>
+      <aside className="notice"><strong>Important security notice</strong><p>Generated phrases use real BIP-39 English words, cryptographic randomness, and a valid checksum. Successful derivation means the app can calculate addresses for the listed standards; it does not prove that a wallet already exists, identify a wallet owner, or indicate funds. Wallet compatibility is path-specific and is labelled only where documentation supports the exact path. The balance tool accepts only manually supplied, authorized public addresses; it never checks addresses derived from generated phrases. Never enter a customer’s real recovery phrase or use a website-generated phrase to secure significant funds; create real wallets with a trusted offline or hardware-wallet setup.</p></aside>
+      <footer>PARAPHRASE BOT <span>·</span> NO SERVER · NO PHRASE STORAGE · AUTHORIZED ADDRESS LOOKUPS ONLY</footer>
     </main>
   );
 }
