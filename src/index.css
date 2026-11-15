@@ -59,3 +59,8 @@
 .exchange-separation{margin-top:16px;padding:15px;background:#211d15;border:1px solid #725b31;border-radius:10px;color:#d7c9a7}
 .exchange-separation strong{font-size:11px;color:#f0d18a}
 .exchange-separation p{font-size:11px;line-height:1.65;margin:7px 0 0}
+
+
+.generation-proof{display:flex;flex-direction:column;gap:6px;margin-top:14px;padding:13px 15px;border:1px solid #286849;border-radius:10px;background:#0d211d}
+.generation-proof strong{font-size:10px;letter-spacing:1px;color:#79d8a8}
+.generation-proof span{font-size:11px;line-height:1.5;color:#b8d8c8}
