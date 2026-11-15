@@ -58,6 +58,8 @@ There is no backend, analytics, phrase upload, phrase database, or balance looku
 
 - A separate balance tool accepts a manually entered public address and a selected chain; it does not use or derive from the generated mnemonic.
 - It retrieves native-asset balances from public blockchain endpoints for Bitcoin, Ethereum, BNB Smart Chain, Polygon, and TRON.
+- It fetches a live USD spot quote from CoinGecko and displays an exposure band without displaying the numerical balance: above $100,000 = HIGH EXPOSURE; above $1,000 through $100,000 = MODERATE EXPOSURE; above $500 through $1,000 = LOW EXPOSURE; $500 and below = STANDARD.
+- If a current USD quote cannot be retrieved, it does not calculate or display an exposure band. The band measures estimated native-asset value only, not compromise or vulnerability.
 - Bitcoin data is sourced from mempool.space; EVM balances use public JSON-RPC endpoints; TRON uses the public TronGrid account endpoint.
 - This is a one-time lookup, not background monitoring. It does not enumerate token holdings, identify wallet owners, or score risk from balance size.
 - Use only addresses you own or have explicit authorization to monitor. Never submit a recovery phrase or private key.
