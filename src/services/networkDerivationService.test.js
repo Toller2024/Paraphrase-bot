@@ -28,6 +28,27 @@ describe("network address derivation", () => {
     expect(result.path).toBe("m/44'/60'/0'/0/0");
   });
 
+  it("derives the same EVM address for Ethereum, BNB Smart Chain, and Polygon", () => {
+    const ethereum = deriveNetworkAddress(VECTOR, "ethereum");
+    const bsc = deriveNetworkAddress(VECTOR, "bsc");
+    const polygon = deriveNetworkAddress(VECTOR, "polygon");
+    expect(bsc.address).toBe(ethereum.address);
+    expect(polygon.address).toBe(ethereum.address);
+    expect(bsc.path).toBe("m/44'/60'/0'/0/0");
+    expect(polygon.path).toBe("m/44'/60'/0'/0/0");
+  });
+
+  it("derives a repeatable TRON address for the same mnemonic", () => {
+    const first = deriveNetworkAddress(VECTOR, "tron");
+    const second = deriveNetworkAddress(VECTOR, "tron");
+    expect(first.address).toBe(second.address);
+    expect(first.path).toBe("m/44'/195'/0'/0/0");
+  });
+
+  it("rejects an unsupported network", () => {
+    expect(() => deriveNetworkAddress(VECTOR, "unsupported-network")).toThrow("Select a supported network.");
+  });
+
   it("derives a TRON address in the expected mainnet format", () => {
     const result = deriveNetworkAddress(VECTOR, "tron");
     expect(result.address).toMatch(/^T[1-9A-HJ-NP-Za-km-z]{33}$/);
