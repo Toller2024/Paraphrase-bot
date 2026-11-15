@@ -107,37 +107,65 @@ export default function App() {
 }
 
 function WalletCompatibility({ addresses }) {
-  const hasNetwork = (terms) => addresses.some((item) => terms.some((term) => item.network.toLowerCase().includes(term)));
-  const platforms = [
-    {
-      name: "OKX Wallet",
-      networks: ["Bitcoin", "Ethereum", "BNB Smart Chain", "Polygon", "TRON"],
-      note: "OKX documents support for Bitcoin, Ethereum, BNB Chain, Polygon and TRON, and supports seed-phrase import. The exact address still depends on the derivation path and account index.",
-      match: hasNetwork(["bitcoin", "ethereum", "bnb smart chain", "polygon", "tron"]),
-    },
-    {
-      name: "Binance Wallet",
-      networks: ["Ethereum", "BNB Smart Chain", "Polygon"],
-      note: "Network-family match only. Binance Wallet supports these EVM networks. Its current mobile wallet uses MPC, so this result does not mean the generated phrase belongs to or can restore a Binance Wallet account.",
-      match: hasNetwork(["ethereum", "bnb smart chain", "polygon"]),
-    },
+  const networkMatches = {
+    bitcoin: addresses.filter((item) => item.network.toLowerCase().includes("bitcoin")),
+    bitcoinModern: addresses.filter((item) => /native segwit|taproot/i.test(item.network)),
+    evm: addresses.filter((item) => /ethereum|bnb smart chain|polygon/i.test(item.network)),
+    tron: addresses.filter((item) => item.network.toLowerCase().includes("tron")),
+  };
+  const wallets = [
+    { name: "OKX Wallet", kind: "Multi-chain self-custody wallet", supports: ["Bitcoin", "Ethereum / EVM", "BNB Chain", "Polygon", "TRON"], families: ["bitcoin", "evm", "tron"], note: "OKX documents multi-chain seed-phrase import and support for these networks." },
+    { name: "Binance Wallet Extension", kind: "Self-custody Web3 wallet", supports: ["Ethereum / EVM", "BNB Chain", "TRON"], families: ["evm", "tron"], note: "Binance documents importing existing seed phrases. This is separate from a regular Binance exchange account." },
+    { name: "Trust Wallet", kind: "Multi-chain self-custody wallet", supports: ["Bitcoin", "Ethereum / EVM", "BNB Chain", "Polygon", "TRON"], families: ["bitcoin", "evm", "tron"], note: "Network support does not confirm the original wallet app or its derivation settings." },
+    { name: "MetaMask", kind: "Self-custody wallet", supports: ["Ethereum / EVM"], families: ["evm"], note: "The match shown here is for EVM address formats. Other MetaMask account types and network features may differ." },
+    { name: "Coinbase Wallet", kind: "Self-custody wallet", supports: ["Bitcoin", "Ethereum / EVM", "BNB Chain", "Polygon"], families: ["bitcoin", "evm"], note: "Coinbase distinguishes mnemonic wallets from passkey smart wallets; their network capabilities are not identical." },
+    { name: "Phantom", kind: "Multi-chain self-custody wallet", supports: ["Bitcoin Native SegWit / Taproot", "Ethereum", "Polygon", "BNB Chain"], families: ["bitcoinModern", "evm"], note: "Its Bitcoin support is Native SegWit and Taproot; a Legacy-only result is not counted as a match." },
+    { name: "Exodus", kind: "Multi-chain self-custody wallet", supports: ["Bitcoin", "Ethereum", "BNB Smart Chain", "Polygon", "TRON"], families: ["bitcoin", "evm", "tron"], note: "Supported assets and integrations vary by device and app version." },
+    { name: "Guarda", kind: "Multi-chain self-custody wallet", supports: ["Bitcoin", "Ethereum / EVM", "TRON"], families: ["bitcoin", "evm", "tron"], note: "Guarda documents importing an existing wallet using a 12- or 24-word mnemonic." },
+    { name: "Rabby Wallet", kind: "EVM self-custody wallet", supports: ["Ethereum / EVM", "BNB Chain", "Polygon"], families: ["evm"], note: "EVM network-family match only." },
+    { name: "Rainbow", kind: "EVM self-custody wallet", supports: ["Ethereum / EVM", "Polygon and EVM networks"], families: ["evm"], note: "EVM network-family match only." },
+    { name: "Kraken Wallet", kind: "Self-custody wallet", supports: ["Bitcoin", "Ethereum / EVM"], families: ["bitcoin", "evm"], note: "Check the exact supported network and account type in the current Kraken Wallet documentation." },
+    { name: "Crypto.com Onchain", kind: "Self-custody wallet", supports: ["Bitcoin", "Ethereum / EVM", "Polygon", "TRON"], families: ["bitcoin", "evm", "tron"], note: "Availability and recovery options can vary by wallet version." },
+    { name: "SafePal", kind: "Software / hardware wallet ecosystem", supports: ["Bitcoin", "Ethereum / EVM", "BNB Chain", "Polygon", "TRON"], families: ["bitcoin", "evm", "tron"], note: "Network support is not proof that a phrase was created by SafePal." },
+    { name: "Tangem", kind: "Hardware wallet ecosystem", supports: ["Bitcoin", "Ethereum / EVM", "Polygon", "TRON"], families: ["bitcoin", "evm", "tron"], note: "A network match does not confirm a Tangem card or its backup configuration." },
+    { name: "Ledger Live", kind: "Hardware wallet companion app", supports: ["Bitcoin", "Ethereum / EVM", "Polygon", "TRON"], families: ["bitcoin", "evm", "tron"], note: "Ledger account paths and device configuration can differ; this is not device identification." },
+    { name: "Trezor Suite", kind: "Hardware wallet companion app", supports: ["Bitcoin", "Ethereum / EVM"], families: ["bitcoin", "evm"], note: "Third-party integrations may add networks; this row covers the main Bitcoin and EVM families only." },
+    { name: "Electrum", kind: "Bitcoin-only wallet", supports: ["Bitcoin"], families: ["bitcoin"], note: "Bitcoin derivation format and script type must match the wallet configuration." },
+    { name: "Sparrow Wallet", kind: "Bitcoin-only wallet", supports: ["Bitcoin"], families: ["bitcoin"], note: "Bitcoin derivation format and script type must match the wallet configuration." },
+    { name: "BlueWallet", kind: "Bitcoin-focused wallet", supports: ["Bitcoin"], families: ["bitcoin"], note: "Bitcoin derivation format and script type must match the wallet configuration." },
+    { name: "Wasabi Wallet", kind: "Bitcoin-only wallet", supports: ["Bitcoin"], families: ["bitcoin"], note: "Bitcoin derivation format and script type must match the wallet configuration." },
   ];
-
+  const getMatches = (families) => families.flatMap((family) => {
+    if (family === "bitcoin") return networkMatches.bitcoin;
+    if (family === "bitcoinModern") return networkMatches.bitcoinModern;
+    if (family === "evm") return networkMatches.evm;
+    if (family === "tron") return networkMatches.tron;
+    return [];
+  });
   return (
     <div className="wallet-compatibility">
       <div className="wallet-compatibility-heading">
         <div><p className="eyebrow">05 / PLATFORM COMPATIBILITY</p><h3>Wallets & exchanges</h3></div>
         <span className="tag">NETWORK MATCH ONLY</span>
       </div>
-      <p className="wallet-compatibility-intro">These are platforms that support one or more of the derived blockchain networks. This cannot identify which app originally created a phrase.</p>
+      <p className="wallet-compatibility-intro">This catalogue compares the locally derived address families with published wallet network support. A match cannot tell us which app created a phrase, prove an account exists, or confirm that the app will restore the same account. Account index, derivation path, script type and wallet version matter.</p>
       <div className="wallet-platform-grid">
-        {platforms.map((platform) => (
-          <article className="wallet-platform" key={platform.name}>
-            <div className="wallet-platform-title"><strong>{platform.name}</strong><span className={platform.match ? "platform-match" : "platform-no-match"}>{platform.match ? "SUPPORTED NETWORK FOUND" : "NO MATCH"}</span></div>
-            <p className="wallet-networks">{platform.networks.join(" · ")}</p>
-            <p>{platform.note}</p>
-          </article>
-        ))}
+        {wallets.map((wallet) => {
+          const matches = getMatches(wallet.families);
+          return (
+            <article className="wallet-platform" key={wallet.name}>
+              <div className="wallet-platform-title"><strong>{wallet.name}</strong><span className={matches.length ? "platform-match" : "platform-no-match"}>{matches.length ? "NETWORK FAMILY MATCH" : "NO DERIVED NETWORK"}</span></div>
+              <p className="wallet-kind">{wallet.kind}</p>
+              <p className="wallet-networks">Supports: {wallet.supports.join(" · ")}</p>
+              {matches.length > 0 && <p className="wallet-match-detail">Matched locally: {[...new Set(matches.map((item) => item.network))].join(" · ")}</p>}
+              <p>{wallet.note}</p>
+            </article>
+          );
+        })}
+      </div>
+      <div className="exchange-separation">
+        <strong>Centralized exchange accounts are different</strong>
+        <p>Regular Binance, Coinbase, Kraken and OKX exchange accounts are login-based custodial accounts, not wallets identified by a BIP-39 phrase. The matching OKX Wallet or Binance Wallet product is a separate Web3 wallet product. This tool does not identify exchange customers or test logins.</p>
       </div>
     </div>
   );
