@@ -53,3 +53,9 @@
 .wallet-networks{font-size:10px;color:#d7b56d;line-height:1.6}
 .wallet-platform>p:last-child{font-size:10px;line-height:1.65;color:#9ca9bf;margin-bottom:0}
 @media(max-width:560px){.wallet-platform-grid{grid-template-columns:1fr}.wallet-platform-title{align-items:flex-start;flex-direction:column}}
+
+.wallet-kind{font-size:9px!important;color:#8190a8!important;text-transform:uppercase;letter-spacing:.7px;margin:7px 0}
+.wallet-match-detail{font-size:10px!important;color:#79d8a8!important;line-height:1.5}
+.exchange-separation{margin-top:16px;padding:15px;background:#211d15;border:1px solid #725b31;border-radius:10px;color:#d7c9a7}
+.exchange-separation strong{font-size:11px;color:#f0d18a}
+.exchange-separation p{font-size:11px;line-height:1.65;margin:7px 0 0}
