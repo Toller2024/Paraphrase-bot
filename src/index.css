@@ -38,3 +38,18 @@
 .compatibility-row code{font-size:10px;color:#c6d2e5;overflow-wrap:anywhere}
 .compatibility-row .secondary{padding:8px 10px;font-size:10px}
 @media(max-width:560px){.compatibility-row{grid-template-columns:1fr auto}.compatibility-row code{grid-column:1/-1;grid-row:2}}
+
+
+.wallet-compatibility{margin-top:22px;padding-top:19px;border-top:1px solid #29374f}
+.wallet-compatibility-heading,.wallet-platform-title{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.wallet-compatibility-heading h3{font-size:17px;margin:0;color:#edf2ff}
+.wallet-compatibility-intro{font-size:12px;line-height:1.65;color:#9ca9bf}
+.wallet-platform-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.wallet-platform{padding:15px;background:#0a1221;border:1px solid #29374f;border-radius:11px}
+.wallet-platform-title strong{font-size:13px;color:#e9d39e}
+.wallet-platform-title span{font-size:8px;letter-spacing:.7px;text-align:right}
+.platform-match{color:#79d8a8}
+.platform-no-match{color:#9ca9bf}
+.wallet-networks{font-size:10px;color:#d7b56d;line-height:1.6}
+.wallet-platform>p:last-child{font-size:10px;line-height:1.65;color:#9ca9bf;margin-bottom:0}
+@media(max-width:560px){.wallet-platform-grid{grid-template-columns:1fr}.wallet-platform-title{align-items:flex-start;flex-direction:column}}
