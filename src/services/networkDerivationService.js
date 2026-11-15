@@ -3,12 +3,14 @@ import { mnemonicToSeedSync } from "@scure/bip39";
 import { sha256 } from "@noble/hashes/sha256";
 import { ripemd160 } from "@noble/hashes/ripemd160";
 import { base58 } from "@scure/base";
+import * as btc from "@scure/btc-signer";
 import { HDNodeWallet, SigningKey, getBytes, keccak256 } from "ethers";
 import { checkMnemonic } from "./mnemonicService.js";
 
 const PATHS = {
   bitcoinLegacy: "m/44'/0'/0'/0/0",
   bitcoinSegwit: "m/84'/0'/0'/0/0",
+  bitcoinTaproot: "m/86'/0'/0'/0/0",
   ethereum: "m/44'/60'/0'/0/0",
   tron: "m/44'/195'/0'/0/0",
 };
@@ -99,10 +101,27 @@ function deriveBitcoin(phrase, format) {
   };
 }
 
+function deriveBitcoinTaproot(phrase) {
+  const normalized = assertValidPhrase(phrase);
+  const seed = mnemonicToSeedSync(normalized);
+  const child = HDKey.fromMasterSeed(seed).derive(PATHS.bitcoinTaproot);
+  if (!child.privateKey) throw new Error("Bitcoin Taproot private-key derivation failed.");
+  const xOnlyPublicKey = btc.utils.pubSchnorr(child.privateKey);
+  const payment = btc.p2tr(xOnlyPublicKey);
+  if (!payment.address) throw new Error("Bitcoin Taproot address encoding failed.");
+  return {
+    address: payment.address,
+    path: PATHS.bitcoinTaproot,
+    network: "Bitcoin Taproot (P2TR / BIP-86)",
+    note: "Bitcoin mainnet BIP-86 key-path address derived locally; no network lookup or balance check performed.",
+  };
+}
+
 export function deriveNetworkAddress(phrase, network) {
   const normalized = assertValidPhrase(phrase);
   if (network === "bitcoin-legacy") return deriveBitcoin(normalized, "legacy");
   if (network === "bitcoin-segwit") return deriveBitcoin(normalized, "segwit");
+  if (network === "bitcoin-taproot") return deriveBitcoinTaproot(normalized);
 
   if (network === "tron") {
     const wallet = HDNodeWallet.fromPhrase(normalized, "", PATHS.tron);
