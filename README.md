@@ -15,6 +15,7 @@ Never enter a real recovery phrase into this simulator. Generated phrases are di
 - Derive Bitcoin Legacy (P2PKH), Native SegWit (P2WPKH), and Taproot (P2TR using BIP-86) addresses locally.
 - Derive EVM addresses for Ethereum, BNB Smart Chain, and Polygon.
 - Derive TRON addresses for TRX and TRC-20 compatibility.
+- For one locally generated phrase, display its supported Bitcoin, EVM (Ethereum, BNB Smart Chain, Polygon), and TRON address derivations side by side.
 - Select the network/address format in the dashboard; USDT is represented by its host chain (ERC-20, BEP-20, or TRC-20).
 - Green status requires both a valid BIP-39 checksum and successful local derivation for the selected network.
 - Known-answer tests cover published Bitcoin BIP-44, BIP-84, BIP-86, and Ethereum derivation vectors.
