@@ -9,6 +9,9 @@ export default function App() {
   const [generated, setGenerated] = useState(0);
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
+  const [simulationSize, setSimulationSize] = useState(25);
+  const [simulation, setSimulation] = useState({ runs: 0, valid: 0, derived: 0, failures: 0 });
+  const [simulationBusy, setSimulationBusy] = useState(false);
   const validation = useMemo(() => checkMnemonic(phrase), [phrase]);
   const derived = useMemo(() => {
     if (!validation.valid) return null;
@@ -24,6 +27,35 @@ export default function App() {
       setCopyMessage("");
     } catch (err) {
       setError(err.message || "Generation failed.");
+    }
+  }
+
+  function runSimulation() {
+    setSimulationBusy(true);
+    try {
+      let valid = 0;
+      let derivedCount = 0;
+      let failures = 0;
+      for (let index = 0; index < simulationSize; index += 1) {
+        const sample = createMnemonic(wordCount);
+        const result = checkMnemonic(sample);
+        if (result.valid) {
+          valid += 1;
+          try { deriveNetworkAddress(sample, network); derivedCount += 1; }
+          catch { failures += 1; }
+        } else { failures += 1; }
+      }
+      setSimulation((current) => ({
+        runs: current.runs + simulationSize,
+        valid: current.valid + valid,
+        derived: current.derived + derivedCount,
+        failures: current.failures + failures,
+      }));
+      setError("");
+    } catch (err) {
+      setError(err.message || "Simulation could not complete.");
+    } finally {
+      setSimulationBusy(false);
     }
   }
 
@@ -58,8 +90,27 @@ export default function App() {
         </select>
         <button className="primary" onClick={generate}>Generate secure phrase <span>↗</span></button>
       </section>
+      <section className="panel simulation-panel">
+        <div className="panel-heading"><div><p className="eyebrow">02 / SAFE SIMULATION</p><h2>Batch research</h2></div><span className="tag">NO PHRASES SAVED</span></div>
+        <p className="simulation-intro">Generate temporary random samples, validate their BIP-39 checksums, and derive addresses locally. Only aggregate counts are kept in this browser session.</p>
+        <label className="field-label" htmlFor="simulation-size">SAMPLE SIZE</label>
+        <select id="simulation-size" value={simulationSize} onChange={(event) => setSimulationSize(Number(event.target.value))}>
+          <option value={10}>10 samples</option>
+          <option value={25}>25 samples</option>
+          <option value={50}>50 samples</option>
+          <option value={100}>100 samples</option>
+        </select>
+        <button className="secondary simulation-button" disabled={simulationBusy} onClick={runSimulation}>{simulationBusy ? "Running simulation…" : `Run ${simulationSize}-sample simulation`}</button>
+        <div className="stats-grid">
+          <Stat label="Samples run" value={simulation.runs} />
+          <Stat label="BIP-39 valid" value={simulation.valid} />
+          <Stat label="Addresses derived" value={simulation.derived} />
+          <Stat label="Errors" value={simulation.failures} />
+        </div>
+        <p className="simulation-footnote">These are generated test samples, not attempts to discover existing wallets or funds. Samples are discarded after each run.</p>
+      </section>
       <section className="panel">
-        <div className="panel-heading"><div><p className="eyebrow">02 / MNEMONIC OUTPUT</p><h2>Recovery phrase</h2></div><span className="tag">BIP-39 ENGLISH</span></div>
+        <div className="panel-heading"><div><p className="eyebrow">03 / MNEMONIC OUTPUT</p><h2>Recovery phrase</h2></div><span className="tag">BIP-39 ENGLISH</span></div>
         <div className="phrase-box">
           {phrase ? phrase.split(" ").map((word, index) => <span className="word" key={index}><small>{String(index + 1).padStart(2, "0")}</small>{word}</span>) : <p className="placeholder">Generate a phrase to display its words here.</p>}
         </div>
@@ -71,7 +122,7 @@ export default function App() {
         {error && <p className="error">{error}</p>}
       </section>
       <section className="panel">
-        <div className="panel-heading"><div><p className="eyebrow">03 / LOCAL VALIDATION</p><h2>Compatibility checks</h2></div><span className={fullyVerified ? "status good" : "status"}>{fullyVerified ? "VALID + DERIVED" : validation.valid ? "DERIVATION FAILED" : "NOT VALIDATED"}</span></div>
+        <div className="panel-heading"><div><p className="eyebrow">04 / LOCAL VALIDATION</p><h2>Compatibility checks</h2></div><span className={fullyVerified ? "status good" : "status"}>{fullyVerified ? "VALID + DERIVED" : validation.valid ? "DERIVATION FAILED" : "NOT VALIDATED"}</span></div>
         <label className="field-label" htmlFor="network-select">ADDRESS NETWORK</label>
         <select id="network-select" value={network} onChange={(event) => setNetwork(event.target.value)}>
           <option value="bitcoin-legacy">Bitcoin · Legacy (P2PKH)</option>
@@ -94,6 +145,10 @@ export default function App() {
       <footer>PARAPHRASE BOT <span>·</span> NO SERVER · NO PHRASE STORAGE · NO BALANCE LOOKUPS</footer>
     </main>
   );
+}
+
+function Stat({ label, value }) {
+  return <div className="stat-card"><strong>{value.toLocaleString()}</strong><span>{label}</span></div>;
 }
 
 function Check({ label, ok }) {
