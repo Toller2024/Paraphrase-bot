@@ -52,3 +52,13 @@ npm run build
 ## Privacy
 
 There is no backend, analytics, phrase upload, phrase database, or balance lookup in this version. Do not deploy this as a service for collecting recovery phrases.
+
+
+## Authorized public-address balance lookup
+
+- A separate balance tool accepts a manually entered public address and a selected chain; it does not use or derive from the generated mnemonic.
+- It retrieves native-asset balances from public blockchain endpoints for Bitcoin, Ethereum, BNB Smart Chain, Polygon, and TRON.
+- Bitcoin data is sourced from mempool.space; EVM balances use public JSON-RPC endpoints; TRON uses the public TronGrid account endpoint.
+- This is a one-time lookup, not background monitoring. It does not enumerate token holdings, identify wallet owners, or score risk from balance size.
+- Use only addresses you own or have explicit authorization to monitor. Never submit a recovery phrase or private key.
+- Public RPC/API providers may rate-limit requests or change availability.
