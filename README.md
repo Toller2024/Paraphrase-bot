@@ -20,7 +20,8 @@ Never enter a real recovery phrase into this simulator. Generated phrases are di
 - Known-answer tests cover published Bitcoin BIP-44, BIP-84, BIP-86, and Ethereum derivation vectors.
 - BIP-39 validation tests cover standard 12-word and 24-word vectors, normalization, unknown words, invalid checksums, unsupported lengths, and empty input.
 - Copy a derived public address independently from the recovery phrase; clipboard feedback is shown in the dashboard.
-- Keep a session-only count; do not send phrases to a server or persist them.
+- Run batch simulations of 10, 25, 50, or 100 newly generated samples; show aggregate validation and derivation counts only. Samples are discarded immediately and never displayed or stored.
+- Keep simulation statistics in component memory for the current page session; do not send phrases to a server or persist them.
 
 ## Run locally
 
