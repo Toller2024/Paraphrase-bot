@@ -13,11 +13,11 @@ export default function App() {
     if (!validation.valid) return null;
     try { return deriveNetworkAddress(phrase, network); } catch { return null; }
   }, [phrase, network, validation.valid]);
+  const fullyVerified = validation.valid && Boolean(derived);
 
   function generate() {
     try {
-      const next = createMnemonic(wordCount);
-      setPhrase(next);
+      setPhrase(createMnemonic(wordCount));
       setGenerated((count) => count + 1);
       setError("");
     } catch (err) {
@@ -26,11 +26,8 @@ export default function App() {
   }
 
   async function copyPhrase() {
-    try {
-      await navigator.clipboard.writeText(phrase);
-    } catch {
-      setError("Clipboard access was blocked by the browser.");
-    }
+    try { await navigator.clipboard.writeText(phrase); }
+    catch { setError("Clipboard access was blocked by the browser."); }
   }
 
   return (
@@ -40,13 +37,11 @@ export default function App() {
         <div><strong>PARAPHRASE BOT</strong><span>LOCAL WALLET PHRASE RESEARCH</span></div>
         <span className="local-pill">● LOCAL ONLY</span>
       </header>
-
       <section className="hero">
         <p className="eyebrow">BIP-39 COMPATIBILITY LAB</p>
         <h1>Generate. Validate.<br /><em>Understand.</em></h1>
         <p className="intro">A local research simulator for generating cryptographically random mnemonic phrases, validating their checksum, and demonstrating address derivation.</p>
       </section>
-
       <section className="panel">
         <div className="panel-heading"><div><p className="eyebrow">01 / CONFIGURATION</p><h2>Phrase generator</h2></div><span className="counter">{generated} generated this session</span></div>
         <label className="field-label" htmlFor="word-count">MNEMONIC LENGTH</label>
@@ -56,7 +51,6 @@ export default function App() {
         </select>
         <button className="primary" onClick={generate}>Generate secure phrase <span>↗</span></button>
       </section>
-
       <section className="panel">
         <div className="panel-heading"><div><p className="eyebrow">02 / MNEMONIC OUTPUT</p><h2>Recovery phrase</h2></div><span className="tag">BIP-39 ENGLISH</span></div>
         <div className="phrase-box">
@@ -68,13 +62,13 @@ export default function App() {
         </div>
         {error && <p className="error">{error}</p>}
       </section>
-
       <section className="panel">
-        <div className="panel-heading"><div><p className="eyebrow">03 / LOCAL VALIDATION</p><h2>Compatibility checks</h2></div><span className={validation.valid ? "status good" : "status"}>{validation.valid ? "VALID" : "WAITING"}</span></div>
+        <div className="panel-heading"><div><p className="eyebrow">03 / LOCAL VALIDATION</p><h2>Compatibility checks</h2></div><span className={fullyVerified ? "status good" : "status"}>{fullyVerified ? "VALID + DERIVED" : validation.valid ? "DERIVATION FAILED" : "NOT VALIDATED"}</span></div>
         <label className="field-label" htmlFor="network-select">ADDRESS NETWORK</label>
         <select id="network-select" value={network} onChange={(event) => setNetwork(event.target.value)}>
           <option value="bitcoin-legacy">Bitcoin · Legacy (P2PKH)</option>
           <option value="bitcoin-segwit">Bitcoin · Native SegWit (P2WPKH)</option>
+          <option value="bitcoin-taproot">Bitcoin · Taproot (P2TR / BIP-86)</option>
           <option value="ethereum">Ethereum · ERC-20</option>
           <option value="bsc">BNB Smart Chain · BEP-20</option>
           <option value="polygon">Polygon</option>
@@ -84,11 +78,11 @@ export default function App() {
           <Check label="Word count" ok={validation.wordCountValid} />
           <Check label="Words in BIP-39 list" ok={validation.allWordsKnown} />
           <Check label="BIP-39 checksum" ok={validation.checksumValid} />
+          <Check label="Selected network address derivation" ok={fullyVerified} />
         </div>
         {derived && <div className="address-card"><p className="eyebrow">{derived.network} ADDRESS · {derived.path}</p><code>{derived.address}</code><p>{derived.note}</p></div>}
       </section>
-
-      <aside className="notice"><strong>Research safety notice</strong><p>A green BIP-39 validation result confirms only that the phrase is correctly formatted. It does not mean the phrase belongs to an existing wallet or controls funds. This app never tests phrases against live wallet services, checks balances, or imports phrases into third-party wallets. Never paste a real recovery phrase here.</p></aside>
+      <aside className="notice"><strong>Research safety notice</strong><p>Green means the BIP-39 phrase passes its checksum and the selected address was derived locally. It does not mean an existing wallet was found or that it contains funds. This app never tests phrases against live wallet services, checks balances, or imports phrases into third-party wallets. Never paste a real recovery phrase here.</p></aside>
       <footer>PARAPHRASE BOT <span>·</span> NO SERVER · NO PHRASE STORAGE · NO BALANCE LOOKUPS</footer>
     </main>
   );
