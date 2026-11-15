@@ -9,11 +9,6 @@ export default function App() {
   const [generated, setGenerated] = useState(0);
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
-  const [simulationSize, setSimulationSize] = useState(1000);
-  const [simulation, setSimulation] = useState({ runs: 0, valid: 0, derived: 0, failures: 0 });
-  const [simulationResults, setSimulationResults] = useState([]);
-  const [simulationProgress, setSimulationProgress] = useState(0);
-  const [simulationBusy, setSimulationBusy] = useState(false);
   const validation = useMemo(() => checkMnemonic(phrase), [phrase]);
   const derived = useMemo(() => {
     if (!validation.valid) return null;
@@ -32,63 +27,7 @@ export default function App() {
     }
   }
 
-  async function runSimulation() {
-    if (simulationBusy) return;
-    setSimulationBusy(true);
-    setSimulationProgress(0);
-    setSimulationResults([]);
-    setSimulation({ runs: 0, valid: 0, derived: 0, failures: 0 });
-    let runs = 0;
-    let valid = 0;
-    let derivedCount = 0;
-    let failures = 0;
-    const visibleResults = [];
-    const chunkSize = 100;
 
-    try {
-      while (runs < simulationSize) {
-        const thisChunk = Math.min(chunkSize, simulationSize - runs);
-        for (let index = 0; index < thisChunk; index += 1) {
-          const sample = createMnemonic(wordCount);
-          const checked = checkMnemonic(sample);
-          runs += 1;
-          if (!checked.valid) {
-            failures += 1;
-            continue;
-          }
-          valid += 1;
-          try {
-            const address = deriveNetworkAddress(sample, network);
-            derivedCount += 1;
-            if (visibleResults.length < 25) {
-              visibleResults.push({
-                id: runs,
-                phrase: sample,
-                wordCount: wordCount,
-                network: address.network,
-                path: address.path,
-                address: address.address,
-                note: address.note,
-              });
-            }
-          } catch {
-            failures += 1;
-          }
-        }
-        setSimulation({ runs: runs, valid: valid, derived: derivedCount, failures: failures });
-        setSimulationProgress(Math.round((runs / simulationSize) * 100));
-        setSimulationResults(visibleResults.slice());
-        if (runs < simulationSize) {
-          await new Promise((resolve) => setTimeout(resolve, 0));
-        }
-      }
-      setError("");
-    } catch (err) {
-      setError(err.message || "Simulation could not complete.");
-    } finally {
-      setSimulationBusy(false);
-    }
-  }
 
   async function copyValue(value, label) {
     try {
@@ -120,29 +59,6 @@ export default function App() {
           <option value={24}>24 words · 256-bit entropy</option>
         </select>
         <button className="primary" onClick={generate}>Generate secure phrase <span>↗</span></button>
-      </section>
-      <section className="panel simulation-panel">
-        <div className="panel-heading"><div><p className="eyebrow">02 / LOCAL COMPATIBILITY TEST</p><h2>Batch research</h2></div><span className="tag">LOCAL ONLY</span></div>
-        <p className="simulation-intro">Generate random test phrases, validate BIP-39 checksums and derive the selected network address locally. The batch never contacts wallet providers or checks whether an address belongs to anyone.</p>
-        <label className="field-label" htmlFor="simulation-size">SAMPLE SIZE</label>
-        <select id="simulation-size" value={simulationSize} onChange={(event) => setSimulationSize(Number(event.target.value))}>
-          <option value={100}>100 samples</option>
-          <option value={1000}>1,000 samples</option>
-          <option value={10000}>10,000 samples</option>
-          <option value={100000}>100,000 samples</option>
-          <option value={1000000}>1,000,000 samples</option>
-        </select>
-        <button className="secondary simulation-button" disabled={simulationBusy} onClick={runSimulation}>{simulationBusy ? "Processing locally…" : `Run ${simulationSize.toLocaleString()}-sample test`}</button>
-        {simulationBusy && <div className="progress-track"><div className="progress-fill" style={{ width: simulationProgress + "%" }} /></div>}
-        <p className="progress-label">{simulationProgress}% complete · {simulation.runs.toLocaleString()} / {simulationSize.toLocaleString()} processed</p>
-        <div className="stats-grid">
-          <Stat label="Samples run" value={simulation.runs} />
-          <Stat label="BIP-39 valid" value={simulation.valid} />
-          <Stat label="Addresses derived" value={simulation.derived} />
-          <Stat label="Errors" value={simulation.failures} />
-        </div>
-        <p className="simulation-footnote">Up to 25 successful samples are shown below for inspection. All samples and results exist only in page memory and are cleared when you run a new batch or leave the page. A valid phrase and derived address do not indicate an existing wallet or owner.</p>
-        {simulationResults.length > 0 && <div className="sample-results"><div className="results-heading"><strong>Verified local samples</strong><span>{simulationResults.length} displayed · maximum 25</span></div>{simulationResults.map((item) => <article className="sample-card" key={item.id}><div className="sample-card-heading"><strong>Sample #{item.id}</strong><span className="status good">BIP-39 VALID · ADDRESS DERIVED</span></div><div className="sample-words">{item.phrase.split(" ").map((word, index) => <span key={index}><small>{index + 1}.</small>{word}</span>)}</div><p className="sample-meta">{item.network} · {item.path}</p><code className="sample-address">{item.address}</code><div className="actions"><button className="secondary" onClick={() => copyValue(item.phrase, "Sample phrase")}>Copy phrase</button><button className="secondary" onClick={() => copyValue(item.address, "Derived address")}>Copy address</button></div></article>)}</div>}
       </section>
       <section className="panel">
         <div className="panel-heading"><div><p className="eyebrow">03 / MNEMONIC OUTPUT</p><h2>Recovery phrase</h2></div><span className="tag">BIP-39 ENGLISH</span></div>
