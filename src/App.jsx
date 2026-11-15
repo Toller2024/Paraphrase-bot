@@ -107,58 +107,77 @@ export default function App() {
 }
 
 function WalletCompatibility({ addresses }) {
-  // Only show a positive match where official documentation confirms both
-  // phrase import and the derivation path used by this simulator.
-  const bitcoin = addresses.filter((item) => item.network.toLowerCase().includes("bitcoin"));
-  const evm = addresses.filter((item) => /ethereum|bnb smart chain|polygon/i.test(item.network));
-  const tron = addresses.filter((item) => item.network.toLowerCase().includes("tron"));
+  // A match is shown only when the exact derivation path used by this app
+  // appears in the wallet provider's published documentation.
+  const profiles = [
+    {
+      name: "Exodus",
+      kind: "Multi-chain self-custody wallet",
+      paths: ["m/44'/0'/0'/0/0", "m/84'/0'/0'/0/0", "m/86'/0'/0'/0/0", "m/44'/60'/0'/0/0"],
+      evidence: "Exodus publishes these exact default paths for Bitcoin Legacy, Native SegWit, Taproot, Ethereum, BNB Smart Chain and Polygon. Its published TRON path differs from this app's TRON path, so TRON is deliberately not marked as a match.",
+      url: "https://www.exodus.com/support/en/articles/8598933-derivation-paths-in-exodus",
+    },
+    {
+      name: "MetaMask",
+      kind: "EVM self-custody wallet",
+      paths: ["m/44'/60'/0'/0/0"],
+      evidence: "MetaMask documents BIP-44 phrase import using the default Ethereum path. Only this app's Ethereum-style address path is counted.",
+      url: "https://support.metamask.io/configure/wallet/importing-a-seed-phrase-from-another-wallet-software-derivation-path/",
+    },
+    {
+      name: "Phantom",
+      kind: "Multi-chain self-custody wallet",
+      paths: ["m/44'/60'/0'/0/0", "m/84'/0'/0'/0/0", "m/86'/0'/0'/0/0"],
+      evidence: "Phantom publishes these exact paths for EVM, Bitcoin Native SegWit and Bitcoin Taproot recovery-phrase accounts. Bitcoin Legacy is not counted.",
+      url: "https://help.phantom.com/articles/12988493966227",
+    },
+    {
+      name: "Trust Wallet",
+      kind: "Multi-chain self-custody wallet",
+      paths: ["m/44'/60'/0'/0/0", "m/84'/0'/0'/0/0"],
+      evidence: "Trust Wallet's developer documentation lists these default Bitcoin and Ethereum derivation paths. This row is limited to those exact paths; it does not claim all its supported networks are covered.",
+      url: "https://github.com/trustwallet/developer/blob/master/wallet-core/wallet-core-usage.md",
+    },
+  ];
 
-  const wallets = [
-    { name: "Exodus", kind: "Multi-chain self-custody wallet", status: "PATHS DOCUMENTED", matches: [...bitcoin, ...evm, ...tron], evidence: "Exodus publishes its default BTC Legacy, Native SegWit, Taproot, Ethereum, BNB Smart Chain, Polygon and TRON derivation paths. Match is limited to the paths shown in its documentation.", url: "https://www.exodus.com/support/en/articles/8598933-derivation-paths-in-exodus" },
-    { name: "MetaMask", kind: "Self-custody wallet", status: "EVM PATH DOCUMENTED", matches: evm.filter((item) => item.network.toLowerCase().includes("ethereum")), evidence: "MetaMask documents phrase import using its default BIP-44 path. This entry only matches the first Ethereum-style address derived here; it does not claim support for Bitcoin or TRON.", url: "https://support.metamask.io/configure/wallet/importing-a-seed-phrase-from-another-wallet-software-derivation-path/" },
-    { name: "Coinbase Wallet", kind: "Self-custody wallet", status: "IMPORT DOCUMENTED · PATH UNCONFIRMED", matches: [], evidence: "Coinbase documents importing a 12-word recovery phrase. The exact derivation path needed to confirm this simulator's addresses has not been established here.", url: "https://help.coinbase.com/en/wallet/getting-started/manage-wallets" },
-    { name: "Kraken Wallet", kind: "Self-custody wallet", status: "IMPORT DOCUMENTED · PATH UNCONFIRMED", matches: [], evidence: "Kraken documents importing 12-, 18- or 24-word BIP-39 phrases and lists supported network families. Exact matching paths are not confirmed here.", url: "https://support.kraken.com/articles/importing-a-wallet-to-kraken-wallet" },
-    { name: "Crypto.com Onchain", kind: "Self-custody wallet", status: "IMPORT DOCUMENTED · PATH UNCONFIRMED", matches: [], evidence: "Crypto.com documents importing 12-, 18- or 24-word recovery phrases. Exact matching derivation paths are not confirmed here.", url: "https://help.crypto.com/en/articles/3824750-how-do-i-import-or-recover-my-wallet" },
-    { name: "OKX Wallet", kind: "Multi-chain self-custody wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit." },
-    { name: "Binance Wallet Extension", kind: "Self-custody Web3 wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit. This is distinct from a Binance exchange account." },
-    { name: "Trust Wallet", kind: "Multi-chain self-custody wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit." },
-    { name: "Phantom", kind: "Multi-chain self-custody wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit." },
-    { name: "Guarda", kind: "Multi-chain self-custody wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit." },
-    { name: "Rabby Wallet", kind: "EVM self-custody wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit." },
-    { name: "Rainbow", kind: "EVM self-custody wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit." },
-    { name: "SafePal", kind: "Software / hardware wallet ecosystem", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit." },
-    { name: "Tangem", kind: "Hardware wallet ecosystem", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit." },
-    { name: "Ledger Live", kind: "Hardware wallet companion app", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit. Device-based recovery can use different account paths." },
-    { name: "Trezor Suite", kind: "Hardware wallet companion app", status: "NOT VERIFIED", matches: [], evidence: "Exact phrase-import and derivation-path compatibility has not been verified in this audit." },
-    { name: "Electrum", kind: "Bitcoin-focused wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact BIP-39 import settings and derivation path compatibility have not been verified in this audit." },
-    { name: "Sparrow Wallet", kind: "Bitcoin-focused wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact BIP-39 import settings and derivation path compatibility have not been verified in this audit." },
-    { name: "BlueWallet", kind: "Bitcoin-focused wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact BIP-39 import settings and derivation path compatibility have not been verified in this audit." },
-    { name: "Wasabi Wallet", kind: "Bitcoin-focused wallet", status: "NOT VERIFIED", matches: [], evidence: "Exact BIP-39 import settings and derivation path compatibility have not been verified in this audit." },
+  const verified = profiles.map((wallet) => {
+    const matches = addresses.filter((item) => wallet.paths.includes(item.path));
+    return { ...wallet, matches };
+  });
+
+  const notAudited = [
+    "OKX Wallet", "Binance Wallet Extension", "Coinbase Wallet", "Guarda",
+    "Rabby Wallet", "Rainbow", "Kraken Wallet", "Crypto.com Onchain",
+    "SafePal", "Tangem", "Ledger Live", "Trezor Suite",
+    "Electrum", "Sparrow Wallet", "BlueWallet", "Wasabi Wallet",
   ];
 
   return (
     <div className="wallet-compatibility">
       <div className="wallet-compatibility-heading">
-        <div><p className="eyebrow">05 / EVIDENCE-BASED COMPATIBILITY</p><h3>Wallet documentation audit</h3></div>
-        <span className="tag">NO GUESSED MATCHES</span>
+        <div><p className="eyebrow">05 / EXACT ADDRESS-PATH AUDIT</p><h3>Confirmed derivation compatibility</h3></div>
+        <span className="tag">PATH-LEVEL EVIDENCE</span>
       </div>
-      <p className="wallet-compatibility-intro">A wallet is marked as a match only when official documentation confirms phrase import and the relevant derivation path. Network support alone is not enough. “Import documented” does not mean this simulator's derived address has been confirmed to match.</p>
+      <p className="wallet-compatibility-intro">A wallet is shown as a match only when its official documentation publishes the exact derivation path used to create an address in this simulator. A network being supported is not enough. This confirms documented path compatibility, not a live restore test or the identity/existence of a wallet.</p>
       <div className="wallet-platform-grid">
-        {wallets.map((wallet) => (
+        {verified.map((wallet) => (
           <article className="wallet-platform" key={wallet.name}>
-            <div className="wallet-platform-title"><strong>{wallet.name}</strong><span className={wallet.matches.length ? "platform-match" : "platform-no-match"}>{wallet.status}</span></div>
+            <div className="wallet-platform-title"><strong>{wallet.name}</strong><span className={wallet.matches.length ? "platform-match" : "platform-no-match"}>{wallet.matches.length ? "EXACT PATH MATCH" : "NO PATH MATCH IN CURRENT OUTPUT"}</span></div>
             <p className="wallet-kind">{wallet.kind}</p>
             <p>{wallet.evidence}</p>
-            {wallet.url && <p><a href={wallet.url} target="_blank" rel="noreferrer">Official documentation</a></p>}
-            {wallet.matches.length > 0 && <p className="wallet-match-detail">Verified derivation address formats in this simulator: {[...new Set(wallet.matches.map((item) => item.network))].join(" · ")}</p>}
+            {wallet.matches.length > 0 && <p className="wallet-match-detail">Exact paths matched: {[...new Set(wallet.matches.map((item) => item.path))].join(" · ")}<br />Address formats: {[...new Set(wallet.matches.map((item) => item.network))].join(" · ")}</p>}
+            <p><a href={wallet.url} target="_blank" rel="noreferrer">Official derivation documentation</a></p>
           </article>
         ))}
       </div>
       <div className="exchange-separation">
-        <strong>Centralized exchange accounts are different</strong>
-        <p>Regular Binance, Coinbase, Kraken and OKX exchange accounts are custodial login-based accounts. They are not identified by a self-custody BIP-39 recovery phrase. Their separate wallet products must be assessed independently.</p>
+        <strong>Not yet verified to exact paths</strong>
+        <p>{notAudited.join(" · ")}. These products remain in the research backlog and are not labelled compatible until their official recovery and derivation documentation can be matched exactly.</p>
       </div>
-      <p className="wallet-compatibility-intro">This is a documentation status report, not a wallet finder. It cannot identify which app created a phrase, prove that an account exists, or establish ownership.</p>
+      <div className="exchange-separation">
+        <strong>Important limitation</strong>
+        <p>Exact path agreement is a strong, reproducible address-compatibility check. A complete restore confirmation requires a wallet owner's own test wallet and must never involve testing generated phrases against other people's accounts. Never enter a real recovery phrase into this research app.</p>
+      </div>
     </div>
   );
 }
