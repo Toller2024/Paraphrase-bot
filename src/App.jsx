@@ -15,6 +15,12 @@ export default function App() {
     try { return deriveNetworkAddress(phrase, network); } catch { return null; }
   }, [phrase, network, validation.valid]);
   const fullyVerified = validation.valid && Boolean(derived);
+  const compatibleAddresses = useMemo(() => {
+    if (!validation.valid) return [];
+    return ["bitcoin-legacy", "bitcoin-segwit", "bitcoin-taproot", "ethereum", "bsc", "polygon", "tron"].flatMap((networkId) => {
+      try { return [deriveNetworkAddress(phrase, networkId)]; } catch { return []; }
+    });
+  }, [phrase, validation.valid]);
 
   function generate() {
     try {
@@ -91,6 +97,7 @@ export default function App() {
           <Check label="Selected network address derivation" ok={fullyVerified} />
         </div>
         {derived && <div className="address-card"><p className="eyebrow">{derived.network} ADDRESS · {derived.path}</p><code>{derived.address}</code><div className="actions"><button className="secondary" onClick={() => copyValue(derived.address, "Public address")}>Copy address</button></div><p>{derived.note}</p></div>}
+        {phrase && validation.valid && <div className="compatibility-list"><p className="eyebrow">OTHER SUPPORTED DERIVATION FORMATS</p>{compatibleAddresses.map((item) => <div className="compatibility-row" key={item.network + item.path}><div><strong>{item.network}</strong><small>{item.path}</small></div><code>{item.address}</code><button className="secondary" onClick={() => copyValue(item.address, item.network + " address")}>Copy</button></div>)}</div>}
       </section>
       <aside className="notice"><strong>Research safety notice</strong><p>Green means the BIP-39 phrase passes its checksum and the selected address was derived locally. It does not mean an existing wallet was found or that it contains funds. This app never tests phrases against live wallet services, checks balances, or imports phrases into third-party wallets. Never paste a real recovery phrase here.</p></aside>
       <footer>PARAPHRASE BOT <span>·</span> NO SERVER · NO PHRASE STORAGE · NO BALANCE LOOKUPS</footer>
