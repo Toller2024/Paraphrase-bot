@@ -20,9 +20,9 @@ Never enter a real recovery phrase into this simulator. Generated phrases are di
 - Known-answer tests cover published Bitcoin BIP-44, BIP-84, BIP-86, and Ethereum derivation vectors.
 - BIP-39 validation tests cover standard 12-word and 24-word vectors, normalization, unknown words, invalid checksums, unsupported lengths, and empty input.
 - Copy a derived public address independently from the recovery phrase; clipboard feedback is shown in the dashboard.
-- Run local batch compatibility tests of 100, 1,000, 10,000, 100,000, or 1,000,000 newly generated samples, processed in small asynchronous chunks so the page can update progress.
-- Display aggregate BIP-39 validation and address-derivation counts, plus up to 25 successful sample phrases and their locally derived addresses for inspection.
-- Keep sample phrases and results only in React page memory. A new batch clears the previous sample list; no phrases are sent to a server or persisted.
+- Generate an individual local test phrase and validate its BIP-39 checksum.
+- Derive an address locally for the selected network and display the derivation path.
+- Keep generated phrases in the current page state only; do not send phrases to a server or persist them.
 
 ## Run locally
 
