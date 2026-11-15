@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { checkMnemonic } from "./mnemonicService.js";
+import { describe, expect, it, vi } from "vitest";
+import { checkMnemonic, createMnemonic } from "./mnemonicService.js";
 
 const VALID_12 = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 const VALID_24 = Array(23).fill("abandon").concat("art").join(" ");
@@ -53,5 +53,45 @@ describe("BIP-39 mnemonic validation", () => {
   it("handles empty and null input safely", () => {
     expect(checkMnemonic("").valid).toBe(false);
     expect(checkMnemonic(null).valid).toBe(false);
+  });
+});
+
+
+describe("secure BIP-39 phrase generation", () => {
+  it("generates valid 12-word and 24-word English mnemonics", () => {
+    const originalCrypto = globalThis.crypto;
+    const mockCrypto = {
+      getRandomValues(bytes) {
+        bytes.fill(0);
+        return bytes;
+      },
+    };
+    vi.stubGlobal("crypto", mockCrypto);
+    try {
+      for (const count of [12, 24]) {
+        const phrase = createMnemonic(count);
+        const result = checkMnemonic(phrase);
+        expect(phrase.split(" ")).toHaveLength(count);
+        expect(result.valid).toBe(true);
+        expect(result.allWordsKnown).toBe(true);
+        expect(result.checksumValid).toBe(true);
+      }
+    } finally {
+      vi.unstubAllGlobals();
+      if (originalCrypto) vi.stubGlobal("crypto", originalCrypto);
+    }
+  });
+
+  it("refuses to generate when secure browser randomness is unavailable", () => {
+    vi.stubGlobal("crypto", undefined);
+    try {
+      expect(() => createMnemonic(12)).toThrow("Secure browser randomness is unavailable.");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("rejects unsupported phrase lengths", () => {
+    expect(() => createMnemonic(15)).toThrow("Choose either 12 or 24 words.");
   });
 });
