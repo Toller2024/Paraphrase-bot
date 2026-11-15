@@ -1,17 +1,18 @@
 import { useMemo, useState } from "react";
 import { createMnemonic, checkMnemonic } from "./services/mnemonicService.js";
-import { deriveEvmAddress } from "./services/derivationService.js";
+import { deriveNetworkAddress } from "./services/networkDerivationService.js";
 
 export default function App() {
   const [wordCount, setWordCount] = useState(12);
   const [phrase, setPhrase] = useState("");
+  const [network, setNetwork] = useState("ethereum");
   const [generated, setGenerated] = useState(0);
   const [error, setError] = useState("");
   const validation = useMemo(() => checkMnemonic(phrase), [phrase]);
   const derived = useMemo(() => {
     if (!validation.valid) return null;
-    try { return deriveEvmAddress(phrase); } catch { return null; }
-  }, [phrase, validation.valid]);
+    try { return deriveNetworkAddress(phrase, network); } catch { return null; }
+  }, [phrase, network, validation.valid]);
 
   function generate() {
     try {
@@ -70,12 +71,21 @@ export default function App() {
 
       <section className="panel">
         <div className="panel-heading"><div><p className="eyebrow">03 / LOCAL VALIDATION</p><h2>Compatibility checks</h2></div><span className={validation.valid ? "status good" : "status"}>{validation.valid ? "VALID" : "WAITING"}</span></div>
+        <label className="field-label" htmlFor="network-select">ADDRESS NETWORK</label>
+        <select id="network-select" value={network} onChange={(event) => setNetwork(event.target.value)}>
+          <option value="bitcoin-legacy">Bitcoin · Legacy (P2PKH)</option>
+          <option value="bitcoin-segwit">Bitcoin · Native SegWit (P2WPKH)</option>
+          <option value="ethereum">Ethereum · ERC-20</option>
+          <option value="bsc">BNB Smart Chain · BEP-20</option>
+          <option value="polygon">Polygon</option>
+          <option value="tron">TRON · TRC-20</option>
+        </select>
         <div className="checks">
           <Check label="Word count" ok={validation.wordCountValid} />
           <Check label="Words in BIP-39 list" ok={validation.allWordsKnown} />
           <Check label="BIP-39 checksum" ok={validation.checksumValid} />
         </div>
-        {derived && <div className="address-card"><p className="eyebrow">FIRST EVM ADDRESS · {derived.path}</p><code>{derived.address}</code><p>Compatible address format: Ethereum · BNB Smart Chain · Polygon</p></div>}
+        {derived && <div className="address-card"><p className="eyebrow">{derived.network} ADDRESS · {derived.path}</p><code>{derived.address}</code><p>{derived.note}</p></div>}
       </section>
 
       <aside className="notice"><strong>Research safety notice</strong><p>A green BIP-39 validation result confirms only that the phrase is correctly formatted. It does not mean the phrase belongs to an existing wallet or controls funds. This app never tests phrases against live wallet services, checks balances, or imports phrases into third-party wallets. Never paste a real recovery phrase here.</p></aside>
