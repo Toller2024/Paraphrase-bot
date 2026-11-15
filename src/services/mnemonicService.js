@@ -15,7 +15,13 @@ export function createMnemonic(wordCount = 12) {
     throw new Error("Choose either 12 or 24 words.");
   }
   const entropyBytes = wordCount === 12 ? 16 : 32;
-  return generateMnemonic(wordlist, entropyBytes * 8, secureRandomBytes);
+  const phrase = generateMnemonic(wordlist, entropyBytes * 8, secureRandomBytes);
+  // Fail closed: never display a generated phrase unless it passes the same
+  // word-list and checksum validation used by the UI.
+  if (!checkMnemonic(phrase).valid) {
+    throw new Error("Generated phrase failed its BIP-39 self-check. Please try again.");
+  }
+  return phrase;
 }
 
 export function checkMnemonic(phrase) {
