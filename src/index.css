@@ -10,3 +10,21 @@
 .stat-card span{font-size:10px;color:#9ca9bf}
 .simulation-footnote{font-size:10px;margin:13px 0 0}
 @media(max-width:560px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+.progress-track{height:7px;margin-top:14px;background:#26334a;border-radius:20px;overflow:hidden}
+.progress-fill{height:100%;background:#d7b56d;border-radius:20px;transition:width .12s ease}
+.progress-label{font-size:10px;color:#9ca9bf;text-align:right;font-variant-numeric:tabular-nums}
+.sample-results{margin-top:22px}
+.results-heading,.sample-card-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.results-heading{padding-bottom:12px;border-bottom:1px solid #29374f;color:#e9d39e;font-size:13px}
+.results-heading span{font-size:10px;color:#9ca9bf}
+.sample-card{margin-top:12px;padding:15px;background:#0a1221;border:1px solid #2c3b55;border-radius:12px}
+.sample-card-heading strong{font-size:12px;color:#e7edf8}
+.sample-card-heading .status{font-size:9px;color:#79d8a8;border-color:#286849}
+.sample-words{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+.sample-words span{padding:7px 9px;background:#131f32;border:1px solid #2b3a54;border-radius:7px;color:#e7edf8;font-size:11px}
+.sample-words small{color:#8291a8;margin-right:6px;font-size:9px}
+.sample-meta{font-size:10px;color:#d7b56d;margin:13px 0 7px}
+.sample-address{display:block;overflow-wrap:anywhere;color:#c5d1e4;font-size:11px;line-height:1.6}
+@media(max-width:560px){.sample-card-heading{align-items:flex-start;flex-direction:column}.results-heading{align-items:flex-start;flex-direction:column}}
