@@ -1,10 +1,10 @@
 # Paraphrase Bot — Wallet Phrase Research Simulator
 
-A browser-based **BIP-39 research simulator**. It generates cryptographically random mnemonic phrases, checks their BIP-39 checksum, and derives a local EVM test address for compatibility demonstrations.
+A browser-based BIP-39 research simulator. It generates cryptographically random mnemonic phrases, checks their BIP-39 checksum, and derives local addresses for compatibility demonstrations.
 
 ## Important safety boundary
 
-This project does **not** search for existing wallets, test phrases against third-party wallet accounts, check balances, or import phrases into live wallet apps. A phrase being BIP-39-valid only means its words and checksum are well-formed; it does not mean it belongs to an existing wallet or controls funds.
+This project does not search for existing wallets, test phrases against third-party wallet accounts, check balances, or import phrases into live wallet apps. A phrase being BIP-39-valid only means its words and checksum are well-formed; it does not mean it belongs to an existing wallet or controls funds.
 
 Never enter a real recovery phrase into this simulator. Generated phrases are displayed locally in the browser and should be treated as sensitive credentials even though they are random.
 
@@ -12,12 +12,13 @@ Never enter a real recovery phrase into this simulator. Generated phrases are di
 
 - Generate 12-word or 24-word English BIP-39 mnemonics using browser cryptographic randomness.
 - Validate BIP-39 word membership and checksum locally.
-- Derive Bitcoin Legacy (P2PKH) and Native SegWit (P2WPKH) addresses locally.
+- Derive Bitcoin Legacy (P2PKH), Native SegWit (P2WPKH), and Taproot (P2TR using BIP-86) addresses locally.
 - Derive EVM addresses for Ethereum, BNB Smart Chain, and Polygon.
 - Derive TRON addresses for TRX and TRC-20 compatibility.
 - Select the network/address format in the dashboard; USDT is represented by its host chain (ERC-20, BEP-20, or TRC-20).
+- Green status requires both a valid BIP-39 checksum and successful local derivation for the selected network.
+- Known-answer tests cover published Bitcoin BIP-44, BIP-84, BIP-86, and Ethereum derivation vectors.
 - Keep a session-only count; do not send phrases to a server or persist them.
-- Run unit tests for mnemonic generation/validation and address derivation.
 
 ## Run locally
 
@@ -39,9 +40,9 @@ npm run build
 
 ## Network notes
 
+- Bitcoin Taproot uses the BIP-86 path `m/86'/0'/0'/0/0` and a key-path P2TR output.
 - ETH, BNB Smart Chain (BEP-20), and Polygon use EVM-compatible address derivation.
 - USDT is a token, not a blockchain. ERC-20 USDT uses an Ethereum address; BEP-20 USDT uses a BNB Smart Chain address; TRC-20 USDT uses a TRON address.
-- Bitcoin Taproot (P2TR) is not included yet.
 
 ## Privacy
 
