@@ -7,6 +7,7 @@ export default function App() {
   const [phrase, setPhrase] = useState("");
   const [network, setNetwork] = useState("ethereum");
   const [generated, setGenerated] = useState(0);
+  const [generationProof, setGenerationProof] = useState(null);
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
   const validation = useMemo(() => checkMnemonic(phrase), [phrase]);
@@ -24,7 +25,16 @@ export default function App() {
 
   function generate() {
     try {
-      setPhrase(createMnemonic(wordCount));
+      const nextPhrase = createMnemonic(wordCount);
+      const selfCheck = checkMnemonic(nextPhrase);
+      if (!selfCheck.valid) throw new Error("Generated phrase did not pass its BIP-39 self-check.");
+      const networks = ["bitcoin-legacy", "bitcoin-segwit", "bitcoin-taproot", "ethereum", "bsc", "polygon", "tron"];
+      const derivedCount = networks.filter((id) => {
+        try { deriveNetworkAddress(nextPhrase, id); return true; } catch { return false; }
+      }).length;
+      if (derivedCount !== networks.length) throw new Error("One or more supported address derivations failed.");
+      setPhrase(nextPhrase);
+      setGenerationProof({ wordCount, entropyBits: wordCount === 12 ? 128 : 256, derivedCount });
       setGenerated((count) => count + 1);
       setError("");
       setCopyMessage("");
@@ -53,7 +63,7 @@ export default function App() {
       <section className="hero">
         <p className="eyebrow">BIP-39 COMPATIBILITY LAB</p>
         <h1>Generate. Validate.<br /><em>Understand.</em></h1>
-        <p className="intro">A local research simulator for generating cryptographically random mnemonic phrases, validating their checksum, and demonstrating address derivation.</p>
+        <p className="intro">A local research simulator for generating genuine English BIP-39 mnemonics from cryptographic randomness, checking the checksum, and deriving standard public-address formats locally.</p>
       </section>
       <section className="panel">
         <div className="panel-heading"><div><p className="eyebrow">01 / CONFIGURATION</p><h2>Phrase generator</h2></div><span className="counter">{generated} generated this session</span></div>
@@ -69,9 +79,14 @@ export default function App() {
         <div className="phrase-box">
           {phrase ? phrase.split(" ").map((word, index) => <span className="word" key={index}><small>{String(index + 1).padStart(2, "0")}</small>{word}</span>) : <p className="placeholder">Generate a phrase to display its words here.</p>}
         </div>
+        {phrase && generationProof && <div className="generation-proof">
+          <strong>GENERATION SELF-CHECK PASSED</strong>
+          <span>{generationProof.wordCount} English BIP-39 words · {generationProof.entropyBits}-bit cryptographic entropy</span>
+          <span>Word-list membership + checksum verified · {generationProof.derivedCount}/7 address derivations succeeded locally</span>
+        </div>}
         <div className="actions">
           <button className="secondary" disabled={!phrase} onClick={() => copyValue(phrase, "Recovery phrase")}>Copy phrase</button>
-          <button className="secondary" disabled={!phrase} onClick={() => { setPhrase(""); setCopyMessage(""); setError(""); }}>Clear</button>
+          <button className="secondary" disabled={!phrase} onClick={() => { setPhrase(""); setGenerationProof(null); setCopyMessage(""); setError(""); }}>Clear</button>
         </div>
         {copyMessage && <p className="copy-message">{copyMessage}</p>}
         {error && <p className="error">{error}</p>}
@@ -98,7 +113,7 @@ export default function App() {
         {phrase && validation.valid && <div className="compatibility-list"><p className="eyebrow">OTHER SUPPORTED DERIVATION FORMATS</p>{compatibleAddresses.map((item) => <div className="compatibility-row" key={item.network + item.path}><div><strong>{item.network}</strong><small>{item.path}</small></div><code>{item.address}</code><button className="secondary" onClick={() => copyValue(item.address, item.network + " address")}>Copy</button></div>)}</div>}
         {phrase && validation.valid && <WalletCompatibility addresses={compatibleAddresses} />}
       </section>
-      <aside className="notice"><strong>Research safety notice</strong><p>Green means the BIP-39 phrase passes its checksum and the selected address was derived locally. It does not mean an existing wallet was found or that it contains funds. This app never tests phrases against live wallet services, checks balances, or imports phrases into third-party wallets. Never paste a real recovery phrase here.</p></aside>
+      <aside className="notice"><strong>Important security notice</strong><p>Generated phrases use real BIP-39 English words, cryptographic randomness, and a valid checksum. Successful derivation means the app can calculate addresses for the listed standards; it does not prove that a wallet already exists, identify a wallet owner, or indicate funds. Wallet compatibility is path-specific and is labelled only where documentation supports the exact path. This app does not probe wallets or check balances. Never enter a customer’s real recovery phrase or use a website-generated phrase to secure significant funds; create real wallets with a trusted offline or hardware-wallet setup.</p></aside>
       <footer>PARAPHRASE BOT <span>·</span> NO SERVER · NO PHRASE STORAGE · NO BALANCE LOOKUPS</footer>
     </main>
   );
