@@ -98,10 +98,48 @@ export default function App() {
         </div>
         {derived && <div className="address-card"><p className="eyebrow">{derived.network} ADDRESS · {derived.path}</p><code>{derived.address}</code><div className="actions"><button className="secondary" onClick={() => copyValue(derived.address, "Public address")}>Copy address</button></div><p>{derived.note}</p></div>}
         {phrase && validation.valid && <div className="compatibility-list"><p className="eyebrow">OTHER SUPPORTED DERIVATION FORMATS</p>{compatibleAddresses.map((item) => <div className="compatibility-row" key={item.network + item.path}><div><strong>{item.network}</strong><small>{item.path}</small></div><code>{item.address}</code><button className="secondary" onClick={() => copyValue(item.address, item.network + " address")}>Copy</button></div>)}</div>}
+        {phrase && validation.valid && <WalletCompatibility addresses={compatibleAddresses} />}
       </section>
       <aside className="notice"><strong>Research safety notice</strong><p>Green means the BIP-39 phrase passes its checksum and the selected address was derived locally. It does not mean an existing wallet was found or that it contains funds. This app never tests phrases against live wallet services, checks balances, or imports phrases into third-party wallets. Never paste a real recovery phrase here.</p></aside>
       <footer>PARAPHRASE BOT <span>·</span> NO SERVER · NO PHRASE STORAGE · NO BALANCE LOOKUPS</footer>
     </main>
+  );
+}
+
+function WalletCompatibility({ addresses }) {
+  const hasNetwork = (terms) => addresses.some((item) => terms.some((term) => item.network.toLowerCase().includes(term)));
+  const platforms = [
+    {
+      name: "OKX Wallet",
+      networks: ["Bitcoin", "Ethereum", "BNB Smart Chain", "Polygon", "TRON"],
+      note: "OKX documents support for Bitcoin, Ethereum, BNB Chain, Polygon and TRON, and supports seed-phrase import. The exact address still depends on the derivation path and account index.",
+      match: hasNetwork(["bitcoin", "ethereum", "bnb smart chain", "polygon", "tron"]),
+    },
+    {
+      name: "Binance Wallet",
+      networks: ["Ethereum", "BNB Smart Chain", "Polygon"],
+      note: "Network-family match only. Binance Wallet supports these EVM networks. Its current mobile wallet uses MPC, so this result does not mean the generated phrase belongs to or can restore a Binance Wallet account.",
+      match: hasNetwork(["ethereum", "bnb smart chain", "polygon"]),
+    },
+  ];
+
+  return (
+    <div className="wallet-compatibility">
+      <div className="wallet-compatibility-heading">
+        <div><p className="eyebrow">05 / PLATFORM COMPATIBILITY</p><h3>Wallets & exchanges</h3></div>
+        <span className="tag">NETWORK MATCH ONLY</span>
+      </div>
+      <p className="wallet-compatibility-intro">These are platforms that support one or more of the derived blockchain networks. This cannot identify which app originally created a phrase.</p>
+      <div className="wallet-platform-grid">
+        {platforms.map((platform) => (
+          <article className="wallet-platform" key={platform.name}>
+            <div className="wallet-platform-title"><strong>{platform.name}</strong><span className={platform.match ? "platform-match" : "platform-no-match"}>{platform.match ? "SUPPORTED NETWORK FOUND" : "NO MATCH"}</span></div>
+            <p className="wallet-networks">{platform.networks.join(" · ")}</p>
+            <p>{platform.note}</p>
+          </article>
+        ))}
+      </div>
+    </div>
   );
 }
 
