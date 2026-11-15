@@ -28,3 +28,13 @@
 .sample-meta{font-size:10px;color:#d7b56d;margin:13px 0 7px}
 .sample-address{display:block;overflow-wrap:anywhere;color:#c5d1e4;font-size:11px;line-height:1.6}
 @media(max-width:560px){.sample-card-heading{align-items:flex-start;flex-direction:column}.results-heading{align-items:flex-start;flex-direction:column}}
+
+
+.compatibility-list{margin-top:18px;border-top:1px solid #29374f;padding-top:16px}
+.compatibility-row{display:grid;grid-template-columns:minmax(125px,1fr) minmax(0,2fr) auto;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #25334a}
+.compatibility-row strong,.compatibility-row small{display:block}
+.compatibility-row strong{font-size:11px;color:#e8d39e}
+.compatibility-row small{font-size:9px;color:#8190a8;margin-top:4px;overflow-wrap:anywhere}
+.compatibility-row code{font-size:10px;color:#c6d2e5;overflow-wrap:anywhere}
+.compatibility-row .secondary{padding:8px 10px;font-size:10px}
+@media(max-width:560px){.compatibility-row{grid-template-columns:1fr auto}.compatibility-row code{grid-column:1/-1;grid-row:2}}
