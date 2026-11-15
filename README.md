@@ -18,6 +18,8 @@ Never enter a real recovery phrase into this simulator. Generated phrases are di
 - Select the network/address format in the dashboard; USDT is represented by its host chain (ERC-20, BEP-20, or TRC-20).
 - Green status requires both a valid BIP-39 checksum and successful local derivation for the selected network.
 - Known-answer tests cover published Bitcoin BIP-44, BIP-84, BIP-86, and Ethereum derivation vectors.
+- BIP-39 validation tests cover standard 12-word and 24-word vectors, normalization, unknown words, invalid checksums, unsupported lengths, and empty input.
+- Copy a derived public address independently from the recovery phrase; clipboard feedback is shown in the dashboard.
 - Keep a session-only count; do not send phrases to a server or persist them.
 
 ## Run locally
