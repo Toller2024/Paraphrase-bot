@@ -33,8 +33,6 @@ export default function App() {
     }
   }
 
-
-
   async function copyValue(value, label) {
     try {
       await navigator.clipboard.writeText(value);
@@ -146,10 +144,26 @@ function WalletCompatibility({ addresses }) {
   });
 
   const notAudited = [
-    "OKX Wallet", "Binance Wallet Extension", "Coinbase Wallet", "Guarda",
-    "Rabby Wallet", "Rainbow", "Kraken Wallet", "Crypto.com Onchain",
-    "SafePal", "Tangem", "Ledger Live", "Trezor Suite",
-    "Electrum", "Sparrow Wallet", "BlueWallet", "Wasabi Wallet",
+    {
+      name: "OKX Wallet",
+      detail: "Official material confirms seed-phrase import and multi-chain address derivation, but the sources reviewed here do not specify an exact path for the address formats this app derives. Status remains NOT VERIFIED.",
+      url: "https://www.okx.com/en-us/help/how-do-i-manage-my-wallet-web",
+    },
+    {
+      name: "Binance Wallet Extension",
+      detail: "Official material describes BIP-44 account derivation and account indexes, but does not establish an exact path for each address format this app derives. Status remains NOT VERIFIED.",
+      url: "https://www.binance.com/en/support/faq/detail/8700d33d7cd145ca9dd1f611ec510c51",
+    },
+    {
+      name: "Binance Keyless Wallet",
+      detail: "A separate MPC/keyless wallet product; Binance states that it does not use seed phrases. A BIP-39 phrase-to-address match is not applicable to this wallet type.",
+      url: "https://www.binance.com/en-PH/support/faq/detail/5a3fc86a702b43e1a4a398ebd8853b77",
+    },
+    ...[
+      "Coinbase Wallet", "Guarda", "Rabby Wallet", "Rainbow", "Kraken Wallet",
+      "Crypto.com Onchain", "SafePal", "Tangem", "Ledger Live", "Trezor Suite",
+      "Electrum", "Sparrow Wallet", "BlueWallet", "Wasabi Wallet",
+    ].map((name) => ({ name, detail: "No exact derivation-path match has been established in this audit. Compatibility is not claimed.", url: null })),
   ];
 
   return (
@@ -171,19 +185,23 @@ function WalletCompatibility({ addresses }) {
         ))}
       </div>
       <div className="exchange-separation">
-        <strong>Not yet verified to exact paths</strong>
-        <p>{notAudited.join(" · ")}. These products remain in the research backlog and are not labelled compatible until their official recovery and derivation documentation can be matched exactly.</p>
+        <strong>Exchange and wallet products — not yet verified to exact paths</strong>
+        <div className="wallet-platform-grid">
+          {notAudited.map((wallet) => (
+            <article className="wallet-platform" key={wallet.name}>
+              <div className="wallet-platform-title"><strong>{wallet.name}</strong><span className="platform-no-match">{wallet.name === "Binance Keyless Wallet" ? "NO SEED PHRASE" : "NOT VERIFIED"}</span></div>
+              <p>{wallet.detail}</p>
+              {wallet.url && <p><a href={wallet.url} target="_blank" rel="noreferrer">Official product documentation</a></p>}
+            </article>
+          ))}
+        </div>
       </div>
       <div className="exchange-separation">
         <strong>Important limitation</strong>
-        <p>Exact path agreement is a strong, reproducible address-compatibility check. A complete restore confirmation requires a wallet owner's own test wallet and must never involve testing generated phrases against other people's accounts. Never enter a real recovery phrase into this research app.</p>
+        <p>Exact path agreement is a reproducible address-compatibility check, not proof that a wallet exists, belongs to anyone, or contains funds. This app does not test generated phrases against live services, probe accounts, or identify owners. Security alerts should be sent only through an authorized provider process or to customers who voluntarily run a self-check on their own wallet; never ask customers to disclose recovery phrases.</p>
       </div>
     </div>
   );
-}
-
-function Stat({ label, value }) {
-  return <div className="stat-card"><strong>{value.toLocaleString()}</strong><span>{label}</span></div>;
 }
 
 function Check({ label, ok }) {
