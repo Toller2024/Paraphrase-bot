@@ -3,7 +3,7 @@ import { mnemonicToSeedSync } from "@scure/bip39";
 import { sha256 } from "@noble/hashes/sha256";
 import { ripemd160 } from "@noble/hashes/ripemd160";
 import { base58 } from "@scure/base";
-import { HDNodeWallet, getBytes, keccak256 } from "ethers";
+import { HDNodeWallet, SigningKey, getBytes, keccak256 } from "ethers";
 import { checkMnemonic } from "./mnemonicService.js";
 
 const PATHS = {
@@ -106,7 +106,7 @@ export function deriveNetworkAddress(phrase, network) {
 
   if (network === "tron") {
     const wallet = HDNodeWallet.fromPhrase(normalized, "", PATHS.tron);
-    const uncompressed = getBytes(wallet.publicKey);
+    const uncompressed = getBytes(SigningKey.computePublicKey(wallet.privateKey, false));
     const accountHash = getBytes(keccak256(uncompressed.slice(1))).slice(-20);
     const payload = new Uint8Array(21);
     payload[0] = 0x41;
