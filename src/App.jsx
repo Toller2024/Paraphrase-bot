@@ -8,6 +8,7 @@ export default function App() {
   const [network, setNetwork] = useState("ethereum");
   const [generated, setGenerated] = useState(0);
   const [error, setError] = useState("");
+  const [copyMessage, setCopyMessage] = useState("");
   const validation = useMemo(() => checkMnemonic(phrase), [phrase]);
   const derived = useMemo(() => {
     if (!validation.valid) return null;
@@ -20,14 +21,20 @@ export default function App() {
       setPhrase(createMnemonic(wordCount));
       setGenerated((count) => count + 1);
       setError("");
+      setCopyMessage("");
     } catch (err) {
       setError(err.message || "Generation failed.");
     }
   }
 
-  async function copyPhrase() {
-    try { await navigator.clipboard.writeText(phrase); }
-    catch { setError("Clipboard access was blocked by the browser."); }
+  async function copyValue(value, label) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopyMessage(`${label} copied to clipboard.`);
+      setError("");
+    } catch {
+      setError("Clipboard access was blocked by the browser.");
+    }
   }
 
   return (
@@ -57,9 +64,10 @@ export default function App() {
           {phrase ? phrase.split(" ").map((word, index) => <span className="word" key={index}><small>{String(index + 1).padStart(2, "0")}</small>{word}</span>) : <p className="placeholder">Generate a phrase to display its words here.</p>}
         </div>
         <div className="actions">
-          <button className="secondary" disabled={!phrase} onClick={copyPhrase}>Copy phrase</button>
-          <button className="secondary" disabled={!phrase} onClick={() => setPhrase("")}>Clear</button>
+          <button className="secondary" disabled={!phrase} onClick={() => copyValue(phrase, "Recovery phrase")}>Copy phrase</button>
+          <button className="secondary" disabled={!phrase} onClick={() => { setPhrase(""); setCopyMessage(""); setError(""); }}>Clear</button>
         </div>
+        {copyMessage && <p className="copy-message">{copyMessage}</p>}
         {error && <p className="error">{error}</p>}
       </section>
       <section className="panel">
@@ -80,7 +88,7 @@ export default function App() {
           <Check label="BIP-39 checksum" ok={validation.checksumValid} />
           <Check label="Selected network address derivation" ok={fullyVerified} />
         </div>
-        {derived && <div className="address-card"><p className="eyebrow">{derived.network} ADDRESS · {derived.path}</p><code>{derived.address}</code><p>{derived.note}</p></div>}
+        {derived && <div className="address-card"><p className="eyebrow">{derived.network} ADDRESS · {derived.path}</p><code>{derived.address}</code><div className="actions"><button className="secondary" onClick={() => copyValue(derived.address, "Public address")}>Copy address</button></div><p>{derived.note}</p></div>}
       </section>
       <aside className="notice"><strong>Research safety notice</strong><p>Green means the BIP-39 phrase passes its checksum and the selected address was derived locally. It does not mean an existing wallet was found or that it contains funds. This app never tests phrases against live wallet services, checks balances, or imports phrases into third-party wallets. Never paste a real recovery phrase here.</p></aside>
       <footer>PARAPHRASE BOT <span>·</span> NO SERVER · NO PHRASE STORAGE · NO BALANCE LOOKUPS</footer>
