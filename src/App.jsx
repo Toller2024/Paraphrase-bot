@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { createMnemonic, checkMnemonic } from "./services/mnemonicService.js";
 import { deriveNetworkAddress } from "./services/networkDerivationService.js";
 import { fetchPublicAddressBalance } from "./services/balanceMonitorService.js";
+import AutoGenerator from "./components/AutoGenerator.jsx";
 
 export default function App() {
   const [wordCount, setWordCount] = useState(12);
@@ -142,6 +143,7 @@ export default function App() {
         <p className="balance-disclaimer">Privacy: the address is sent to the selected public blockchain data endpoint. Do not enter private keys or recovery phrases. This feature checks native coin balance only; it does not enumerate tokens, identify owners, or monitor addresses in the background. Provider availability and rate limits may vary.</p>
       </section>
       <aside className="notice"><strong>Important security notice</strong><p>Generated phrases use real BIP-39 English words, cryptographic randomness, and a valid checksum. Successful derivation means the app can calculate addresses for the listed standards; it does not prove that a wallet already exists, identify a wallet owner, or indicate funds. Wallet compatibility is path-specific and is labelled only where documentation supports the exact path. The balance tool accepts only manually supplied, authorized public addresses; it never checks addresses derived from generated phrases. Never enter a customer’s real recovery phrase or use a website-generated phrase to secure significant funds; create real wallets with a trusted offline or hardware-wallet setup.</p></aside>
+      <AutoGenerator />
       <footer>PARAPHRASE BOT <span>·</span> NO SERVER · NO PHRASE STORAGE · AUTHORIZED ADDRESS LOOKUPS ONLY</footer>
     </main>
   );
