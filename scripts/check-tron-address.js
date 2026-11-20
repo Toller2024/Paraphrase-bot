@@ -58,6 +58,7 @@ function readCompleted(file) {
   if (!fs.existsSync(file)) return new Set();
   return new Set(
     fs.readFileSync(file, "utf8").split(/\r?\n/).slice(1)
+      .filter((line) => line.endsWith(',"OK"'))
       .map((line) => line.match(/^"([T][1-9A-HJ-NP-Za-km-z]{33})"/)?.[1])
       .filter(Boolean)
   );
