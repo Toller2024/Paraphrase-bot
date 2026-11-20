@@ -7,7 +7,8 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:tron": "node scripts/check-tron-address.js"
   },
   "dependencies": {
     "@scure/bip39": "^1.6.0",
